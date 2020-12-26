@@ -1,6 +1,7 @@
 import gym
 import numpy as np
 import q_learning
+import maxQ0
 
 # create environement
 env = gym.make("Taxi-v3")
@@ -8,17 +9,17 @@ env.render()
 
 # create Q-table and initialize it
 action_size = env.action_space.n
-print("Action size ", action_size)
+# print("Action size ", action_size)
 
 state_size = env.observation_space.n
-print("State size ", state_size)
+# print("State size ", state_size)
 
 qtable = np.zeros((state_size, action_size))
 # print(qtable)
 
 # create hyperparameters
-total_episodes = 50000  # Total episodes
-total_test_episodes = 100  # Total states episodes
+total_episodes = 5001  # Total episodes
+total_test_episodes = 10  # Total states episodes
 max_steps = 99  # Max steps per episode
 
 learning_rate = 0.7  # Learning rate
@@ -32,11 +33,18 @@ decay_rate = 0.01  # Exponential decay rate for exploration prob
 
 # the specific algorithm
 
-# todo: change Q learning to other algorithms
+# Q-learning
 # q_learning.run(env, qtable, min_epsilon, epsilon, max_epsilon, gamma, learning_rate,decay_rate, total_episodes, max_steps)
 
-# use Q-table to play Taxi
+# Max Q learning (without save data or fresh run)
+#maxQ0.run(env, total_episodes)
 
+# with save data
+rewards = np.load("saves\Qmax_{}.npy".format(total_episodes))
+
+maxQ0.show_plot(rewards)
+
+# use Q-table to play Taxi
 def run_simulation():
   env.reset()
   rewards = []
@@ -64,4 +72,3 @@ def run_simulation():
       state = new_state
   env.close()
   print("Score over time: " + str(sum(rewards) / total_test_episodes))
-
