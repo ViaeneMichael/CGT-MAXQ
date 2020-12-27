@@ -2,16 +2,17 @@ from maxQ.agent import Agent
 import numpy as np
 
 # e-Greedy Execution of the MAXQ Graph.
-def epsilon_greedy(maxnode, s, args):
+def epsilon_greedy(maxnode, agent, s, args):
   epsilon = args[0]
   Q = []
   actions = []
   
-  for j in maxnode.childNodes:
+  for j in maxnode.child_nodes:
+    j = agent.graph[j]
     if j.primitive or not j.terminal(s):
       val = j.get_V(s) + maxnode.get_C(s, j)
       Q.append(val)
-      actions.append(j.get_action())
+      actions.append(j)
   
   best_action_idx = np.argmax(Q)
   
@@ -23,21 +24,24 @@ def epsilon_greedy(maxnode, s, args):
 
 # evaluation of node
 # todo: is this correct
-def eval(maxnode, old_state, new_state):
+def eval(maxnode, agent, old_state, new_state):
   if maxnode.primitive:
     return maxnode.get_V(old_state)
   else:
-    for action1 in maxnode.childNodes:
+    for action1 in maxnode.child_nodes:
+      print(maxnode.child_nodes)
+      action = agent.graph[action1]
       # maxnode.get_V(old_state)
-      action1.set_V(new_state,action1.get_V(old_state)) #Copy V from old value
-      action1.set_V(new_state,eval(maxnode, old_state, new_state))
-      
+      action.set_V(new_state, action.get_V(old_state))  # Copy V from old value
+      action.set_V(new_state, eval(maxnode, agent, old_state, new_state))
+    
     Q = np.arange(0)
     nodes = np.arange(0)
-    for action2 in maxnode.childNodes:
-      Q = np.concatenate((Q, [action2.get_V(new_state)]))
-      nodes = np.concatenate(action2)
-      
+    for action2 in maxnode.child_nodes:
+      action = agent.graph[action2]
+      Q = np.concatenate((Q, [action.get_V(new_state)]))
+      nodes = np.concatenate(action)
+    
     max_arg = np.argmax(Q)
     return nodes[max_arg].get_V(new_state)
 
@@ -45,32 +49,32 @@ def eval(maxnode, old_state, new_state):
 def maxQ0(agent, maxnode, state):
   count = 0
   if maxnode.primitive:
-    new_state, reward, done, info = agent.env.step(maxnode.action_index)
+    agent.new_state, reward, done, info = agent.env.step(maxnode.action_index)
     temp_v = (1 - agent.alpha) * maxnode.get_V(state) + agent.alpha * reward
     maxnode.set_V(state, temp_v)
     return 1
   else:
     while not maxnode.terminal(state):
-      action = maxnode.pick_action(epsilon_greedy, state, [0.01])
+      action = maxnode.pick_action(epsilon_greedy, agent, state, [0.01])
       N = maxQ0(agent, action, state)
-      new_state, reward, done, info = agent.env.step(maxnode.action_index)
-      v_t = eval(maxnode, state, new_state)
+      v_t = eval(maxnode, agent, state, agent.new_state)
       new_c = (1 - agent.alpha) * maxnode.get_C(state, action) + agent.alpha * agent.gamma ** N * v_t
       maxnode.set_C(state, action, new_c)
       count += N
-      state = new_state
+      state = agent.new_state
     return count
 
 def run_game(env, episodes, alpha, gamma):
-  agent = Agent(alpha, gamma, env.env.decoder)
+  agent = Agent(env, alpha, gamma, env.decode)
   rewards = []
   for j in range(episodes):
     
     # reset
     env.reset()
     agent.reward_sum = 0
+    agent.new_state = env.s
     
-    maxQ0(agent, agent.graph, env.s)
+    maxQ0(agent, agent.root, env.s)
     rewards.append(agent.reward_sum)
     
     if (j % 1000 == 0):

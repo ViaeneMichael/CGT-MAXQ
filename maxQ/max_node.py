@@ -6,10 +6,9 @@ class MaxNode:
     # if we go get maxnode C_value and the key combination is not yet in the dictionary - initialize it to 0 (is done in the get_Cvals)
     self.C_vals = {}
     # dictionary with states as keys and Q_val as value
-    # todo: ask copy V ?
     self.V_vals = {}
     self.action_index = action_index
-    self.childNodes = []
+    self.child_nodes = []
     self.primitive = True
     self.decoder = lambda state: state
   
@@ -39,9 +38,9 @@ class MaxNode:
   def set_decoder(self, state_decoder):
     self.decoder = state_decoder
   
-  def addChildNode(self, action):
+  def add_child_node(self, action):
     self.primitive = False
-    self.childNodes.append(action)
+    self.child_nodes.append(action)
     
   def terminal(self, state):
     RGBY = [(0, 0), (0, 4), (4, 0), (4, 3)]
@@ -61,5 +60,5 @@ class MaxNode:
     elif self.primitive:
       return True
     
-  def pîck_action(self, action_selection_method, state, args):
-    return action_selection_method(self, state, args)
+  def pick_action(self, action_selection_method, agent, state, args):
+    return action_selection_method(self, agent, state, args)
