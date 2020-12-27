@@ -60,5 +60,5 @@ class MaxNode:
     elif self.primitive:
       return True
     
-  def pick_action(self, action_selection_method, agent, state, args):
-    return action_selection_method(self, agent, state, args)
+  def pick_action(self, action_selection_method, state, args):
+    return action_selection_method(self, state, args)

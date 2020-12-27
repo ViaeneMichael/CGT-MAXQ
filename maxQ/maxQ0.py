@@ -51,7 +51,7 @@ def maxQ0(agent, maxnode, state):
     return 1
   else:
     while not maxnode.terminal(state):
-      action = maxnode.pick_action(epsilon_greedy, agent, state, [0.01])
+      action = maxnode.pick_action(epsilon_greedy, state, [0.01])
       N = maxQ0(agent, action, state)
       v_t = eval(maxnode, state, agent.new_state)
       new_c = (1 - agent.alpha) * maxnode.get_C(state, action) + agent.alpha * agent.gamma ** N * v_t
