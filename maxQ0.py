@@ -8,10 +8,12 @@ class Agent:
   def __init__(self, nr_of_nodes, nr_of_states, alpha, gamma, env):
     self.env = env
     
+    # todo: change
     self.V = np.zeros((nr_of_nodes, nr_of_states))
     self.C = np.zeros((nr_of_nodes, nr_of_states, nr_of_nodes))
     self.V_copy = self.V.copy()
     
+    # consistend of max nodes and Q nodes
     s = self.south = 0
     n = self.north = 1
     e = self.east = 2
