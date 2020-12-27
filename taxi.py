@@ -58,7 +58,7 @@ def run_simulation():
       # render agent learning
       # env.render()
       
-      # Take the action (index) that has the maximum expected future reward given that s
+      # Take the maxnode (index) that has the maximum expected future reward given that s
       action = np.argmax(qtable[state, :])
       
       new_state, reward, done, info = env.step(action)

@@ -9,21 +9,21 @@ def run(env, qtable, min_epsilon, epsilon, max_epsilon, gamma, learning_rate, de
     done = False
     
     for step in range(max_steps):
-      # 3. Choose an action a in the current world s (s)
-      ## First we randomize a number
+      # 3. Choose an maxnode maxnode in the current world s (s)
+      ## First we randomize maxnode number
       exp_exp_tradeoff = random.uniform(0, 1)
       
       ## If this number > greater than epsilon --> exploitation (taking the biggest Q value for this s)
       if exp_exp_tradeoff > epsilon:
         action = np.argmax(qtable[state, :])
-      # Else doing a random choice --> exploration
+      # Else doing maxnode random choice --> exploration
       else:
         action = env.action_space.sample()
       
-      # Take the action (a) and observe the outcome s(s') and reward (r)
+      # Take the maxnode (maxnode) and observe the outcome s(s') and reward (r)
       new_state, reward, done, info = env.step(action)
       
-      # Update Q(s,a):= Q(s,a) + lr [R(s,a) + gamma * max Q(s',a') - Q(s,a)]
+      # Update Q(s,maxnode):= Q(s,maxnode) + lr [R(s,maxnode) + gamma * max Q(s',maxnode') - Q(s,maxnode)]
       qtable[state, action] = qtable[state, action] + \
                               learning_rate * \
                               (reward + gamma * np.max(qtable[new_state, :])

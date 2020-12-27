@@ -101,7 +101,7 @@ def epsilon_greedy(agent, i, s):
   actions = []
   
   for j in agent.graph[i]:
-    if agent.is_primitive(j) or not agent.is_terminal(j):
+    if agent.is_primitive(j) or not agent.terminal(j):
       val = agent.get_V(j, s) + agent.get_C(i, s, j)
       Q.append(val)
       actions.append(j)
@@ -110,7 +110,7 @@ def epsilon_greedy(agent, i, s):
   
   if np.random.rand(1) < e:
     action = np.random.choice(actions)
-    # print("return: {} from {}".format(action, actions))
+    # print("return: {} from {}".format(maxnode, actions))
     return action
   else:
     # print("return: {} from {}".format(best_action_idx, actions))
@@ -129,7 +129,7 @@ def eval(agent, a, s):
     max_arg = np.argmax(Q)
     return agent.V_copy[max_arg, s]
 
-# a: max node
+# maxnode: max node
 # s: state
 def maxQ_0(agent, i, s):
   if agent.done:
@@ -138,7 +138,7 @@ def maxQ_0(agent, i, s):
   if agent.is_primitive(i):
     # observe result s' (I think nothing needs to change here -- done?)
     
-    # take action a
+    # take maxnode maxnode
     agent.new_s, reward, agent.done, info = agent.env.step(i)
     
     agent.set_reward_sum(agent.get_reward_sum() + reward)
@@ -150,8 +150,8 @@ def maxQ_0(agent, i, s):
     return 1
   elif i <= agent.root:
     count = 0
-    while not agent.is_terminal(i):
-      # choose action a according to the current exploration policy (hierarchical policy)
+    while not agent.terminal(i):
+      # choose maxnode maxnode according to the current exploration policy (hierarchical policy)
       a = epsilon_greedy(agent, i, s)
       N = maxQ_0(agent, a, s)
       agent.V_copy = agent.V.copy()  # todo: snap dit niet zo goed!
