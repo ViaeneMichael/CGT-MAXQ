@@ -1,6 +1,5 @@
-from agent import Agent
+from maxQ.agent import Agent
 import numpy as np
-import matplotlib.pyplot as plt
 
 # e-Greedy Execution of the MAXQ Graph.
 def epsilon_greedy(maxnode, s, args):
@@ -62,10 +61,23 @@ def maxQ0(agent, maxnode, state):
       state = new_state
     return count
 
-def run_game(env, alpha, gamma):
-  # env = initializeEnvironment()
-  agent = Agent(alpha, gamma, env.decoder)
-  maxQ0(agent, agent.graph, env.s)
+def run_game(env, episodes, alpha, gamma):
+  agent = Agent(alpha, gamma, env.env.decoder)
+  rewards = []
+  for j in range(episodes):
+    
+    # reset
+    env.reset()
+    agent.reward_sum = 0
+    
+    maxQ0(agent, agent.graph, env.s)
+    rewards.append(agent.reward_sum)
+    
+    if (j % 1000 == 0):
+      print(j)
+  
+  np.save("saves\Qmax_{}".format(episodes), rewards)
+  return rewards
 
 # Make State class that can be indexed -> use as keys for C_vals in MaxNode
 # State in OpenAI Taxi is four-tuple(taxi_row,taxi_col,pass_loc,dest_idx)

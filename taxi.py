@@ -1,11 +1,11 @@
 import gym
 import numpy as np
-import q_learning
-import maxQ0_old
+from maxQ import maxQ0
+import matplotlib.pyplot as plt
 
 # create environement
 env = gym.make("Taxi-v3")
-env.render()
+# env.render()
 
 # create Q-table and initialize it
 action_size = env.action_space.n
@@ -30,19 +30,6 @@ epsilon = 1.0  # Exploration rate
 max_epsilon = 1.0  # Exploration probability at start
 min_epsilon = 0.01  # Minimum exploration probability
 decay_rate = 0.01  # Exponential decay rate for exploration prob
-
-# the specific algorithm
-
-# Q-learning
-# q_learning.run(env, qtable, min_epsilon, epsilon, max_epsilon, gamma, learning_rate,decay_rate, total_episodes, max_steps)
-
-# Max Q learning (without save data or fresh run)
-#maxQ0.run(env, total_episodes)
-
-# with save data
-rewards = np.load("saves\Qmax_{}.npy".format(total_episodes))
-
-maxQ0_old.show_plot(rewards)
 
 # use Q-table to play Taxi
 def run_simulation():
@@ -72,3 +59,29 @@ def run_simulation():
       state = new_state
   env.close()
   print("Score over time: " + str(sum(rewards) / total_test_episodes))
+
+def show_plot(rewards):
+  print(rewards)
+  
+  # learning plot
+  plt.figure(figsize=(15, 7.5))
+  plt.plot(rewards)
+  plt.xlabel('episode num')
+  plt.ylabel('points')
+  plt.show()
+  
+# the specific algorithm
+
+# Q-learning
+# q_learning.run(env, qtable, min_epsilon, epsilon, max_epsilon, gamma, learning_rate,decay_rate, total_episodes, max_steps)
+
+# Max Q learning (without save data or fresh run)
+alpha = 0.2
+gamma = 1
+
+rewards = maxQ0.run_game(env, total_episodes, alpha, gamma)
+
+# with save data
+# rewards = np.load("saves\Qmax_{}.npy".format(total_episodes))
+
+show_plot(rewards)

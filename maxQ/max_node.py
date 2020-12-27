@@ -48,20 +48,18 @@ class MaxNode:
     taxirow, taxicol, passidx, destidx = list(self.decoder(state))
     taxiloc = (taxirow, taxicol)
     
-    if self.get_action() == 10:
+    if self.action_index == 10:
       return False
-    elif self.get_action() == 9:
+    elif self.action_index == 9:
       return passidx < 4
-    elif self.get_action() == 8:
+    elif self.action_index == 8:
       return passidx >= 4
-    elif self.get_action() == 7:
+    elif self.action_index == 7:
       return passidx >= 4 and taxiloc == RGBY[destidx]
-    elif self.get_action() == 6:
+    elif self.action_index == 6:
       return passidx < 4 and taxiloc == RGBY[passidx]
     elif self.primitive:
       return True
     
   def pîck_action(self, action_selection_method, state, args):
     return action_selection_method(self, state, args)
-  
-  

@@ -1,4 +1,4 @@
-from max_node import MaxNode
+from maxQ.max_node import MaxNode
 
 class Agent:
   def __init__(self, alpha, gamma, state_decoder):
@@ -32,28 +32,28 @@ class Agent:
     west.set_decoder(state_decoder)
     
     # root
-    maxRoot.addChildNode(maxGet.get_action)
-    maxRoot.addChildNode(maxPut.get_action)
+    maxRoot.addChildNode(maxGet.action_index)
+    maxRoot.addChildNode(maxPut.action_index)
     
     # get
-    maxGet.addChildNode(pickup.get_action)
-    maxGet.addChildNode(maxNavGet.get_action)
+    maxGet.addChildNode(pickup.action_index)
+    maxGet.addChildNode(maxNavGet.action_index)
     
     # put
-    maxPut.addChildNode(maxNavPut.get_action)
-    maxPut.addChildNode(putdown.get_action)
+    maxPut.addChildNode(maxNavPut.action_index)
+    maxPut.addChildNode(putdown.action_index)
     
     # gotoSource
-    maxNavGet.addChildNode(north.get_action)
-    maxNavGet.addChildNode(east.get_action)
-    maxNavGet.addChildNode(south.get_action)
-    maxNavGet.addChildNode(west.get_action)
+    maxNavGet.addChildNode(north.action_index)
+    maxNavGet.addChildNode(east.action_index)
+    maxNavGet.addChildNode(south.action_index)
+    maxNavGet.addChildNode(west.action_index)
     
     # gotoDestination
-    maxNavPut.addChildNode(north.get_action)
-    maxNavPut.addChildNode(east.get_action)
-    maxNavPut.addChildNode(south.get_action)
-    maxNavPut.addChildNode(west.get_action)
+    maxNavPut.addChildNode(north.action_index)
+    maxNavPut.addChildNode(east.action_index)
+    maxNavPut.addChildNode(south.action_index)
+    maxNavPut.addChildNode(west.action_index)
     
     self.graph = maxRoot
     self.reward_sum = 0
