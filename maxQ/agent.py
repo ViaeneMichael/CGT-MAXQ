@@ -57,6 +57,7 @@ class Agent:
     
     self.env = env
     self.new_state = env.s
+    self.done = False
     self.graph = maxRoot
     self.reward_sum = 0
     self.alpha = alpha
