@@ -77,7 +77,7 @@ def show_plot(rewards):
 
 # Max Q learning (without save data or fresh run)
 alpha = 0.2
-gamma = 1
+gamma = 1.0
 
 rewards = maxQ0.run_game(env, total_episodes, alpha, gamma)
 

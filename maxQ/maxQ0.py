@@ -27,40 +27,48 @@ def eval(maxnode, old_state, new_state):
   if maxnode.primitive:
     return maxnode.get_V(old_state)
   else:
-    for action1 in maxnode.child_nodes:
-      # Copy V from old value???
-      action1.set_V(new_state, action1.get_V(old_state))
-      action1.set_V(new_state, eval(action1, old_state, new_state))
-    
+    for idx in np.arange(len(maxnode.child_nodes)):
+      maxnode.child_nodes[idx].set_V(new_state, maxnode.child_nodes[idx].get_V(old_state))
+      maxnode.child_nodes[idx].set_V(new_state, eval(maxnode.child_nodes[idx], old_state, new_state))
+
     Q = np.arange(0)
-    nodes = np.arange(0)
+    nodes = []
     for action2 in maxnode.child_nodes:
       Q = np.concatenate((Q, [action2.get_V(new_state)]))
-      nodes = np.concatenate(action2)
-    
+      nodes = np.append(nodes, action2)
+
     max_arg = np.argmax(Q)
-    print(max_arg)
     return nodes[max_arg].get_V(new_state)
+  
 
 # todo: is this correct
 def maxQ0(agent, maxnode, state):
-  if not agent.done and maxnode.primitive:
+  if agent.done:
+    print("tis gedaan!")
+    return 0
+  agent.done = False
+  if maxnode.primitive:
     agent.new_state, reward, done, info = agent.env.step(maxnode.action_index)
     agent.done = done
-    temp_v = (1 - agent.alpha) * maxnode.get_V(state) + agent.alpha * reward
+    agent.reward_sum += reward
+    temp_v = (1.0 - agent.alpha) * maxnode.get_V(state) + agent.alpha * reward
     maxnode.set_V(state, temp_v)
     return 1
-  elif not agent.done:
+  else:
     count = 0
     while not maxnode.terminal(state):
-      print(state)
+      print("In loop:")
+      print(maxnode.terminal(state))
       action = maxnode.pick_action(epsilon_greedy, state, [0.01])
+      print("action: {}".format(action.action_index))
       N = maxQ0(agent, action, state)
+      maxnode.set_V(agent.new_state, maxnode.get_V(state)) # copy
       v_t = eval(maxnode, state, agent.new_state)
       new_c = (1 - agent.alpha) * maxnode.get_C(state, action) + agent.alpha * agent.gamma ** N * v_t
       maxnode.set_C(state, action, new_c)
       count += N
       state = agent.new_state
+      print(count)
     return count
 
 def run_game(env, episodes, alpha, gamma):
@@ -72,7 +80,6 @@ def run_game(env, episodes, alpha, gamma):
     env.reset()
     agent.reward_sum = 0
     agent.new_state = env.s
-    agent.done = False
     
     maxQ0(agent, agent.graph, env.s)
     rewards.append(agent.reward_sum)
