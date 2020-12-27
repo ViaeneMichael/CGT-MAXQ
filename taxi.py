@@ -1,7 +1,7 @@
 import gym
 import numpy as np
 import q_learning
-import maxQ0
+import maxQ0_old
 
 # create environement
 env = gym.make("Taxi-v3")
@@ -42,7 +42,7 @@ decay_rate = 0.01  # Exponential decay rate for exploration prob
 # with save data
 rewards = np.load("saves\Qmax_{}.npy".format(total_episodes))
 
-maxQ0.show_plot(rewards)
+maxQ0_old.show_plot(rewards)
 
 # use Q-table to play Taxi
 def run_simulation():
