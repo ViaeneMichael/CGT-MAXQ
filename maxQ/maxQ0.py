@@ -29,11 +29,10 @@ def eval(maxnode, agent, old_state, new_state):
     return maxnode.get_V(old_state)
   else:
     for action1 in maxnode.child_nodes:
-      print(maxnode.child_nodes)
       action = agent.graph[action1]
-      # maxnode.get_V(old_state)
-      action.set_V(new_state, action.get_V(old_state))  # Copy V from old value
-      action.set_V(new_state, eval(maxnode, agent, old_state, new_state))
+      # Copy V from old value
+      action.set_V(new_state, action.get_V(old_state))
+      action.set_V(new_state, eval(action, agent, old_state, new_state))
     
     Q = np.arange(0)
     nodes = np.arange(0)
