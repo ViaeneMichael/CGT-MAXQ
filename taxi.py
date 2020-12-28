@@ -1,6 +1,6 @@
 import gym
 import numpy as np
-from maxQ import maxQ0
+from legacy import maxQ0
 import matplotlib.pyplot as plt
 
 # create environement
@@ -18,7 +18,7 @@ qtable = np.zeros((state_size, action_size))
 # print(qtable)
 
 # create hyperparameters
-total_episodes = 5001  # Total episodes
+total_episodes = 20000  # Total episodes
 total_test_episodes = 10  # Total states episodes
 max_steps = 99  # Max steps per episode
 
@@ -76,8 +76,9 @@ def show_plot(rewards):
 # q_learning.run(env, qtable, min_epsilon, epsilon, max_epsilon, gamma, learning_rate,decay_rate, total_episodes, max_steps)
 
 # Max Q learning (without save data or fresh run)
+# todo: 1 or 1/t+1
 alpha = 0.2
-gamma = 1.0
+gamma = 0.5
 
 rewards = maxQ0.run_game(env, total_episodes, alpha, gamma)
 
