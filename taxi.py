@@ -1,6 +1,8 @@
 import gym
 import numpy as np
-from legacy import maxQ0
+from MaxQ0 import maxQ0
+from MaxQQ import maxQQ
+from Polling import polling
 import matplotlib.pyplot as plt
 
 # create environement
@@ -60,8 +62,8 @@ def run_simulation():
   env.close()
   print("Score over time: " + str(sum(rewards) / total_test_episodes))
 
-def show_plot(rewards):
-  print(rewards)
+def show_plot(algorithm,episodes):
+  rewards = np.load(".\saves\{}_{}.npy".format(algorithm,episodes))
   
   # learning plot
   plt.figure(figsize=(15, 7.5))
@@ -70,19 +72,23 @@ def show_plot(rewards):
   plt.ylabel('points')
   plt.show()
   
-# the specific algorithm
+  
+  plt.savefig("./plots/{}_{}".format(algorithm, episodes))
+  
+# Main: specify algorithm
 
 # Q-learning
 # q_learning.run(env, qtable, min_epsilon, epsilon, max_epsilon, gamma, learning_rate,decay_rate, total_episodes, max_steps)
 
-# Max Q learning (without save data or fresh run)
-# todo: 1 or 1/t+1
-alpha = 0.2
+# Max Q learning
+episodes = 50000
 gamma = 0.5
 
-rewards = maxQ0.run_game(env, total_episodes, alpha, gamma)
+# r_maxQ0 = maxQ0.run_game(env, episodes, gamma)
+# r_maxQQ = maxQQ.run_game(env, episodes, gamma)
+# polling = polling.run_game(env, 10000, gamma)
 
-# with save data
-# rewards = np.load("saves\Qmax_{}.npy".format(total_episodes))
+# show_plot("maxq0", episodes)
+# show_plot("maxqq", episodes)
+# show_plot("polling", 10000)
 
-show_plot(rewards)

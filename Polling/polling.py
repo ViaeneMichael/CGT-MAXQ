@@ -26,7 +26,7 @@ class Agent:
     put = self.put = 9
     root = self.root = 10
     
-    self.step = 0.0  # used for alpha
+    self.step = 0.0
     self.gamma = gamma
     self.done = False
     self.__reward_sum = 0
@@ -132,42 +132,43 @@ def eval(agent, a, s):
 
 # maxnode: max node
 # s: state
-def maxQ_0(agent, i, s):
+def polling(agent, i, s):
   if agent.done:
     i = 11  # end recursion
   agent.done = False
   if agent.is_primitive(i):
-    # observe result s' (I think nothing needs to change here -- done?)
+    agent.new_s, reward, _, info = agent.env.step(i)
+    agent.done = True
     
-    # take maxnode maxnode
-    agent.new_s, reward, agent.done, info = agent.env.step(i)
     agent.step += 1
-    
     agent.set_reward_sum(agent.get_reward_sum() + reward)
     
-    # print(agent.step)
     alpha = 1.0 / (agent.step + 1.0)
-    # print(alpha)
     new_v = (1 - alpha) * agent.get_V(i, s) + alpha * reward
     agent.set_V(i, s, new_v)
     return 1
   elif i <= agent.root:
     count = 0
-    while not agent.is_terminal(i):
-      # choose maxnode maxnode according to the current exploration policy (hierarchical policy)
-      a = epsilon_greedy(agent, i, s)
-      N = maxQ_0(agent, a, s)
-      agent.V_copy = agent.V.copy()
-      v_t = eval(agent, i, agent.new_s)
-      alpha = 1.0 / (agent.step + 1.0)
-      new_c = (1 - alpha) * agent.get_C(i, s, a) + alpha * agent.gamma ** N * v_t
-      agent.set_C(i, s, a, new_c)
-      count += N
-      s = agent.new_s
+    
+    # RGBY = [(0, 0), (0, 4), (4, 0), (4, 3)]
+    # taxirow, taxicol, passidx, destidx = list(agent.env.decode(agent.env.s))
+    # taxiloc = (taxirow, taxicol)
+    #
+    # while not (passidx >= 4 and taxiloc == RGBY[destidx]):
+    
+    a = epsilon_greedy(agent, i, s)
+    N = polling(agent, a, s)
+    agent.V_copy = agent.V.copy()
+    v_t = eval(agent, i, agent.new_s)
+    alpha = 1.0 / (agent.step + 1.0)
+    new_c = (1 - alpha) * agent.get_C(i, s, a) + alpha * agent.gamma ** N * v_t
+    agent.set_C(i, s, a, new_c)
+    count += N
+    s = agent.new_s
     return count
 
 # Main
-def run_game(env, episodes,gamma):
+def run_game(env, episodes, gamma):
   # gotoSource + gotoDestination + put + get + root (number of non primitive actions)
   np_actions = 5
   nr_of_nodes = env.action_space.n + np_actions
@@ -181,12 +182,21 @@ def run_game(env, episodes,gamma):
     # reset
     taxi_agent.reset()
     
-    maxQ_0(taxi_agent, taxi_agent.root, env.s)  # start with root node (0) and starting state s_0 (0)
+    RGBY = [(0, 0), (0, 4), (4, 0), (4, 3)]
+    taxirow, taxicol, passidx, destidx = list(taxi_agent.env.decode(taxi_agent.env.s))
+    taxiloc = (taxirow, taxicol)
+    
+    while not (passidx >= 4 and taxiloc == RGBY[destidx]):
+      taxirow, taxicol, passidx, destidx = list(taxi_agent.env.decode(taxi_agent.env.s))
+      taxiloc = (taxirow, taxicol)
+      
+      polling(taxi_agent, taxi_agent.root, env.s)
+    
     rewards.append(taxi_agent.get_reward_sum() / taxi_agent.step)
     
-    if (j % 1000 == 0):
+    if (j % 100 == 0):
       print(taxi_agent.get_reward_sum())
       print(j)
   
-  np.save(".\saves\maxq0_{}".format(episodes), rewards)
+  np.save(".\saves\polling_{}".format(episodes), rewards)
   return rewards
