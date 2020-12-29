@@ -149,7 +149,6 @@ def polling(agent, i, s):
     return 1
   elif i <= agent.root:
     count = 0
-    
     # RGBY = [(0, 0), (0, 4), (4, 0), (4, 3)]
     # taxirow, taxicol, passidx, destidx = list(agent.env.decode(agent.env.s))
     # taxiloc = (taxirow, taxicol)
@@ -170,39 +169,45 @@ def polling(agent, i, s):
 # Main
 def run_game(env, trails, episodes, gamma):
   # gotoSource + gotoDestination + put + get + root (number of non primitive actions)
-  np_actions = 5
-  nr_of_nodes = env.action_space.n + np_actions
-  nr_of_states = env.observation_space.n
+	np_actions = 5
+	nr_of_nodes = env.action_space.n + np_actions
+	nr_of_states = env.observation_space.n
   
-  taxi_agent = Agent(nr_of_nodes, nr_of_states, gamma, env)  # starting state
+	taxi_agent = Agent(nr_of_nodes, nr_of_states, gamma, env)  # starting state
   
-  result = np.zeros((trails, int(episodes / 10)))
-  avgReward = np.zeros(10)
-  for i in range(trails):
-    print("trail: {}".format(i))
-    count = 0
-    for j in range(episodes):
-      
-      # reset
-      taxi_agent.reset()
-      
-      # algorithm
-      polling(taxi_agent, taxi_agent.root, env.s)  # start with root node (0) and starting state s_0 (0)
-      
-      # add average reward
-      avgReward[count] = taxi_agent.get_reward_sum() / taxi_agent.step
-      
-      # average of 10 rewards and add to result
-      if len(avgReward) >= 10:
-        result[i][int(j / 10)] = np.average(avgReward)
-        avgReward = np.zeros(10)
-        count = 0
-      
-      # print status
-      if j % 1000 == 0:
-        print("episode: {}".format(j))
-      
-      count += 1
+	result = np.zeros((trails, int(episodes / 10)))
+	avgReward = np.zeros(10)
+	for i in range(trails):
+		print("trail: {}".format(i))
+		count = 0
+		for j in range(episodes):      
+			# reset
+			c=0
+			taxi_agent.reset()
+			RGBY = [(0, 0), (0, 4), (4, 0), (4, 3)]
+			taxirow, taxicol, passidx, destidx = list(taxi_agent.env.decode(taxi_agent.env.s))
+			taxiloc = (taxirow, taxicol)
+			while not (passidx >= 4 and taxiloc == RGBY[destidx] and c>5000):
+			# algorithm
+				polling(taxi_agent, taxi_agent.root, env.s)  # start with root node (0) and starting state s_0 (0)
+				taxirow, taxicol, passidx, destidx = list(taxi_agent.env.decode(taxi_agent.env.s))
+				taxiloc = (taxirow, taxicol)
+				c+=1
+		
+			# add average reward
+			avgReward[count] = taxi_agent.get_reward_sum() / taxi_agent.step
+		
+			# average of 10 rewards and add to result
+			if len(avgReward) >= 10:
+				result[i][int(j / 10)] = np.average(avgReward)
+				avgReward = np.zeros(10)
+				count = 0
+		
+			# print status
+			#if j % 1000 == 0:
+			print("episode: {}".format(j))
+		
+			count += 1
   
-  np.save(".\saves\polling_{}_{}".format(trails, episodes), result)
-  return result
+	np.save(".\saves\polling_{}_{}".format(trails, episodes), result)
+	return result

@@ -75,17 +75,17 @@ def show_plot(algorithm, trails, episodes):
 # Max Q learning
 env = gym.make("Taxi-v3")
 
-trails = 200
+trails = 1
 maxq_episodes = 50000  # maxq0 and maxqq 50 000 episodes
-polling_episodes = 10000
+polling_episodes = 5000
 gamma = 0.5
 
 # print("-----------------------MAXQ-0 started-------------------------------")
 # r_maxQ0 = maxQ0.run_game(env, trails, maxq_episodes, gamma)
 # print("-----------------------MAXQ-Q started-------------------------------")
 # r_maxQQ = maxQQ.run_game(env, trails, maxq_episodes, gamma)
-# print("-----------------------Polling started------------------------------")
-# polling = polling.run_game(env, trails, polling_episodes, gamma)
+print("-----------------------Polling started------------------------------")
+polling = polling.run_game(env, trails, polling_episodes, gamma)
 
 # show_plot("maxq0", trails, maxq_episodes)
 # show_plot("maxqq",trails, maxq_episodes)
