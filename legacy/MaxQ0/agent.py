@@ -1,4 +1,4 @@
-from legacy.max_node import MaxNode
+from legacy.MaxQ0.max_node import MaxNode
 
 class Agent:
   def __init__(self, env, alpha, gamma, state_decoder):

@@ -1,4 +1,4 @@
-from legacy.agent import Agent
+from legacy.MaxQ0.agent import Agent
 import numpy as np
 
 # e-Greedy Execution of the MAXQ Graph.
