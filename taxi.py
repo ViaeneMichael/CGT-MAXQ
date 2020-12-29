@@ -40,17 +40,18 @@ import matplotlib.pyplot as plt
 
 def show_plot(algorithm, trails, episodes):
   rewards = np.load(".\saves\{}_{}_{}.npy".format(algorithm, trails, episodes))
-  print(rewards)
   reward_sequence = np.sum(rewards, axis=0) / trails
   
   # learning plot
   plt.figure(figsize=(15, 7.5))
   plt.plot(reward_sequence)
-  plt.xlabel('episode num')
-  plt.ylabel('points')
-  plt.show()
+  plt.xlabel('episodes')
+  plt.ylabel('reward / step')
   
   plt.savefig("./plots/{}_{}_{}".format(algorithm, trails, episodes))
+  
+  plt.show()
+  
 
 # Main: specify algorithm
 
@@ -79,8 +80,8 @@ maxq_episodes = 50000  # maxq0 and maxqq 50 000 episodes
 polling_episodes = 10000
 gamma = 0.5
 
-print("-----------------------MAXQ-0 started-------------------------------")
-r_maxQ0 = maxQ0.run_game(env, trails, maxq_episodes, gamma)
+# print("-----------------------MAXQ-0 started-------------------------------")
+# r_maxQ0 = maxQ0.run_game(env, trails, maxq_episodes, gamma)
 # print("-----------------------MAXQ-Q started-------------------------------")
 # r_maxQQ = maxQQ.run_game(env, trails, maxq_episodes, gamma)
 # print("-----------------------Polling started------------------------------")
@@ -88,4 +89,4 @@ r_maxQ0 = maxQ0.run_game(env, trails, maxq_episodes, gamma)
 
 # show_plot("maxq0", trails, maxq_episodes)
 # show_plot("maxqq",trails, maxq_episodes)
-# show_plot("polling", trails, polling_episodes)
+show_plot("polling", trails, polling_episodes)
