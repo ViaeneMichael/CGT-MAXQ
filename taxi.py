@@ -1,87 +1,92 @@
 import gym
 import numpy as np
-from maxQ import maxQ0
+from MaxQ0 import maxQ0
+from MaxQQ import maxQQ
+from Polling import polling
 import matplotlib.pyplot as plt
 
-# create environement
-env = gym.make("Taxi-v3")
-# env.render()
+# qtable = np.zeros((state_size, action_size))
 
-# create Q-table and initialize it
-action_size = env.action_space.n
-# print("Action size ", action_size)
-
-state_size = env.observation_space.n
-# print("State size ", state_size)
-
-qtable = np.zeros((state_size, action_size))
 # print(qtable)
 
-# create hyperparameters
-total_episodes = 5001  # Total episodes
-total_test_episodes = 10  # Total states episodes
-max_steps = 99  # Max steps per episode
-
-learning_rate = 0.7  # Learning rate
-gamma = 0.618  # Discounting rate
-
-# Exploration parameters
-epsilon = 1.0  # Exploration rate
-max_epsilon = 1.0  # Exploration probability at start
-min_epsilon = 0.01  # Minimum exploration probability
-decay_rate = 0.01  # Exponential decay rate for exploration prob
-
 # use Q-table to play Taxi
-def run_simulation():
-  env.reset()
-  rewards = []
-  
-  for episode in range(total_test_episodes):
-    state = env.reset()
-    done = False
-    total_rewards = 0
-    
-    for step in range(max_steps):
-      # render agent learning
-      # env.render()
-      
-      # Take the maxnode (index) that has the maximum expected future reward given that s
-      action = np.argmax(qtable[state, :])
-      
-      new_state, reward, done, info = env.step(action)
-      
-      total_rewards += reward
-      
-      if done:
-        rewards.append(total_rewards)
-        # print ("Score", total_rewards)
-        break
-      state = new_state
-  env.close()
-  print("Score over time: " + str(sum(rewards) / total_test_episodes))
+# def run_simulation():
+#   env.reset()
+#   rewards = []
+#
+#   for episode in range(total_test_episodes):
+#     state = env.reset()
+#     done = False
+#     total_rewards = 0
+#
+#     for step in range(max_steps):
+#       # render agent learning
+#       # env.render()
+#
+#       # Take the maxnode (index) that has the maximum expected future reward given that s
+#       action = np.argmax(qtable[state, :])
+#
+#       new_state, reward, done, info = env.step(action)
+#
+#       total_rewards += reward
+#
+#       if done:
+#         rewards.append(total_rewards)
+#         # print ("Score", total_rewards)
+#         break
+#       state = new_state
+#   env.close()
+#   print("Score over time: " + str(sum(rewards) / total_test_episodes))
 
-def show_plot(rewards):
-  print(rewards)
+def show_plot(algorithm, trails, episodes):
+  rewards = np.load(".\saves\{}_{}_{}.npy".format(algorithm, trails, episodes))
+  reward_sequence = np.sum(rewards, axis=0) / trails
   
   # learning plot
   plt.figure(figsize=(15, 7.5))
-  plt.plot(rewards)
-  plt.xlabel('episode num')
-  plt.ylabel('points')
+  plt.plot(reward_sequence)
+  plt.xlabel('episodes')
+  plt.ylabel('reward / step')
+  
+  plt.savefig("./plots/{}_{}_{}".format(algorithm, trails, episodes))
+  
   plt.show()
   
-# the specific algorithm
+
+# Main: specify algorithm
 
 # Q-learning
+# create hyperparameters
+# total_episodes = 20000  # Total episodes
+# total_test_episodes = 1000  # Total states episodes
+# max_steps = 99  # Max steps per episode
+#
+# learning_rate = 0.7  # Learning rate
+# gamma = 0.618  # Discounting rate
+#
+# # Exploration parameters
+# epsilon = 1.0  # Exploration rate
+# max_epsilon = 1.0  # Exploration probability at start
+# min_epsilon = 0.01  # Minimum exploration probability
+# decay_rate = 0.01  # Exponential decay rate for exploration prob
+
 # q_learning.run(env, qtable, min_epsilon, epsilon, max_epsilon, gamma, learning_rate,decay_rate, total_episodes, max_steps)
 
-# Max Q learning (without save data or fresh run)
-alpha = 0.2
-gamma = 1
+# Max Q learning
+env = gym.make("Taxi-v3")
 
-rewards = maxQ0.run_game(env, total_episodes, alpha, gamma)
+trails = 200
+maxq_episodes = 50000  # maxq0 and maxqq 50 000 episodes
+polling_episodes = 10000
+gamma = 0.5
 
-# with save data
-# rewards = np.load("saves\Qmax_{}.npy".format(total_episodes))
+# print("-----------------------MAXQ-0 started-------------------------------")
+# r_maxQ0 = maxQ0.run_game(env, trails, maxq_episodes, gamma)
+# print("-----------------------MAXQ-Q started-------------------------------")
+# r_maxQQ = maxQQ.run_game(env, trails, maxq_episodes, gamma)
+# print("-----------------------Polling started------------------------------")
+# polling = polling.run_game(env, trails, polling_episodes, gamma)
 
-show_plot(rewards)
+# show_plot("maxq0", trails, maxq_episodes)
+# show_plot("maxqq",trails, maxq_episodes)
+show_plot("polling", trails, polling_episodes)

@@ -7,6 +7,7 @@ class MaxNode:
     self.C_vals = {}
     # dictionary with states as keys and Q_val as value
     self.V_vals = {}
+    
     self.action_index = action_index
     self.child_nodes = []
     self.primitive = True
@@ -41,7 +42,7 @@ class MaxNode:
   def add_child_node(self, action):
     self.primitive = False
     self.child_nodes.append(action)
-    
+  
   def terminal(self, state):
     RGBY = [(0, 0), (0, 4), (4, 0), (4, 3)]
     taxirow, taxicol, passidx, destidx = list(self.decoder(state))
@@ -50,15 +51,19 @@ class MaxNode:
     if self.action_index == 10:
       return False
     elif self.action_index == 9:
+      print("hangt vast bij 9")
       return passidx < 4
     elif self.action_index == 8:
+      print("hangt vast bij 8")
       return passidx >= 4
     elif self.action_index == 7:
+      print("hangt vast bij 7")
       return passidx >= 4 and taxiloc == RGBY[destidx]
     elif self.action_index == 6:
+      print("hangt vast bij 6")
       return passidx < 4 and taxiloc == RGBY[passidx]
     elif self.primitive:
       return True
-    
-  def pick_action(self, action_selection_method, agent, state, args):
-    return action_selection_method(self, agent, state, args)
+
+  def pick_action(self, action_selection_method, state, args):
+    return action_selection_method(self, state, args)
