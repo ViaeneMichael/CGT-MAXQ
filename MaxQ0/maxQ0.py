@@ -1,14 +1,9 @@
 import numpy as np
-import gym
-import matplotlib.pyplot as plt
-
-# TODO: veel gekopieerd van https://github.com/Kirili4ik/HRL-taxi/blob/master/Taxi.py
 
 class Agent:
-  def __init__(self, nr_of_nodes, nr_of_states, gamma, env):
+  def __init__(self, nr_of_nodes, nr_of_states, alpha, gamma, env):
     self.env = env
-    
-    # todo: change
+
     self.V = np.zeros((nr_of_nodes, nr_of_states))
     self.C = np.zeros((nr_of_nodes, nr_of_states, nr_of_nodes))
     self.V_copy = self.V.copy()
@@ -26,7 +21,9 @@ class Agent:
     put = self.put = 9
     root = self.root = 10
     
-    self.step = 0.0  # used for alpha
+    self.alpha = alpha
+    self.step = 0.0
+    self.episode = 0.0
     self.gamma = gamma
     self.done = False
     self.__reward_sum = 0
@@ -97,7 +94,7 @@ class Agent:
 
 # e-Greedy Execution of the MAXQ Graph.
 def epsilon_greedy(agent, i, s):
-  e = 0.1
+  e = 1 / np.sqrt(agent.episode)
   Q = []
   actions = []
   
@@ -145,10 +142,7 @@ def maxQ_0(agent, i, s):
     
     agent.set_reward_sum(agent.get_reward_sum() + reward)
     
-    # print(agent.step)
-    alpha = 1.0 / (agent.step + 1.0)
-    # print(alpha)
-    new_v = (1 - alpha) * agent.get_V(i, s) + alpha * reward
+    new_v = (1 - agent.alpha) * agent.get_V(i, s) + agent.alpha * reward
     agent.set_V(i, s, new_v)
     return 1
   elif i <= agent.root:
@@ -159,27 +153,28 @@ def maxQ_0(agent, i, s):
       N = maxQ_0(agent, a, s)
       agent.V_copy = agent.V.copy()
       v_t = eval(agent, i, agent.new_s)
-      alpha = 1.0 / (agent.step + 1.0)
-      new_c = (1 - alpha) * agent.get_C(i, s, a) + alpha * agent.gamma ** N * v_t
+      new_c = (1 - agent.alpha) * agent.get_C(i, s, a) + agent.alpha * agent.gamma ** N * v_t
       agent.set_C(i, s, a, new_c)
       count += N
       s = agent.new_s
     return count
 
 # Main
-def run_game(env, trails, episodes, gamma):
+def run_game(env, trails, episodes, alpha, gamma):
   # gotoSource + gotoDestination + put + get + root (number of non primitive actions)
   np_actions = 5
   nr_of_nodes = env.action_space.n + np_actions
   nr_of_states = env.observation_space.n
   
-  taxi_agent = Agent(nr_of_nodes, nr_of_states, gamma, env)  # starting state
+  taxi_agent = Agent(nr_of_nodes, nr_of_states, alpha, gamma, env)  # starting state
   
-  result = np.zeros((trails, int(episodes / 10)))
-  avgReward = np.zeros(10)
+  result = np.zeros((trails, int(episodes / 10), 2))
+  avgReward = np.zeros((10, 2))
+  avgStep = np.zeros((10, 2))
   for i in range(trails):
     print("trail: {}".format(i))
     count = 0
+    taxi_agent.episode = 1
     for j in range(episodes):
       
       # reset
@@ -189,19 +184,23 @@ def run_game(env, trails, episodes, gamma):
       maxQ_0(taxi_agent, taxi_agent.root, env.s)  # start with root node (0) and starting state s_0 (0)
       
       # add average reward
-      avgReward[count] = taxi_agent.get_reward_sum() / taxi_agent.step
+      avgReward[count] = taxi_agent.get_reward_sum()
+      avgStep[count] = taxi_agent.step
+      
+      count += 1
       
       # average of 10 rewards and add to result
-      if len(avgReward) >= 10:
-        result[i][int(j / 10)] = np.average(avgReward)
+      if count >= 10:
+        result[i][int(j / 10)] = (np.average(avgReward), np.average(avgStep))
         avgReward = np.zeros(10)
+        avgStep = np.zeros(10)
         count = 0
       
       # print status
       if j % 1000 == 0:
         print("episode: {}".format(j))
-      
-      count += 1
+        
+      taxi_agent.episode += 1
   
   np.save(".\saves\maxq0_{}_{}".format(trails, episodes), result)
   return result

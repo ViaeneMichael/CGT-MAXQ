@@ -1,16 +1,11 @@
 import numpy as np
-import gym
-import matplotlib.pyplot as plt
 from collections import deque
-import sys, operator
-
-# TODO: veel gekopieerd van https://github.com/Kirili4ik/HRL-taxi/blob/master/Taxi.py
+import operator
 
 class Agent:
-  def __init__(self, nr_of_nodes, nr_of_states, gamma, env):
+  def __init__(self, nr_of_nodes, nr_of_states, alpha, gamma, env):
     self.env = env
     
-    # todo: change
     self.V = np.zeros((nr_of_nodes, nr_of_states))
     self.C = np.zeros((nr_of_nodes, nr_of_states, nr_of_nodes))
     self.C_tilde = np.zeros((nr_of_nodes, nr_of_states, nr_of_nodes))
@@ -29,7 +24,9 @@ class Agent:
     put = self.put = 9
     root = self.root = 10
     
-    self.step = 0.0  # used for alpha
+    self.alpha = alpha
+    self.step = 0.0
+    self.episode = 0.0
     self.gamma = gamma
     self.done = False
     self.__reward_sum = 0
@@ -106,7 +103,7 @@ class Agent:
 
 # e-Greedy Execution of the MAXQ Graph.
 def epsilon_greedy(agent, i, s):
-  e = 0.1
+  e = 1 / np.sqrt(agent.episode)
   Q = []
   actions = []
   
@@ -120,24 +117,9 @@ def epsilon_greedy(agent, i, s):
   
   if np.random.rand(1) < e:
     action = np.random.choice(actions)
-    # print("return: {} from {}".format(maxnode, actions))
     return action
   else:
-    # print("return: {} from {}".format(best_action_idx, actions))
     return actions[best_action_idx]
-
-# evaluation of node
-def eval(agent, a, s):
-  if agent.is_primitive(a):
-    return agent.V_copy[a, s]
-  else:
-    for j in agent.graph[a]:
-      agent.V_copy[j, s] = eval(agent, j, s)
-    Q = np.arange(0)
-    for a2 in agent.graph[a]:
-      Q = np.concatenate((Q, [agent.V_copy[a2, s]]))
-    max_arg = np.argmax(Q)
-    return agent.V_copy[max_arg, s]
 
 def argmax_Q(agent, i, s):
   actions = []
@@ -152,12 +134,9 @@ def argmax_Q(agent, i, s):
   if len(actions) == 0:
     return None
   
-  qs = [agent.get_V(a, agent.new_s) + agent.get_C_tilde(i, s, a) for a in actions]
+  qs = [agent.get_V(a, agent.new_s) + agent.get_C_tilde(i, agent.new_s, a) for a in actions]
   i, v = max(enumerate(qs), key=operator.itemgetter(1))
   return actions[i]
-
-# def Q_tilde(agent, i, s, a):
-#  return agent.get_V(a, s) + agent.get_C_tilde(i, s, a) if a else 0.0
 
 def R_tilde(agent, i):
   if agent.is_terminal(i):
@@ -173,23 +152,17 @@ def maxQ_Q(agent, i, s):
     i = 11  # end recursion
   agent.done = False
   if agent.is_primitive(i):
-    # observe result s' (I think nothing needs to change here -- done?)
     
-    # take maxnode maxnode
     agent.new_s, reward, agent.done, info = agent.env.step(i)
     agent.step += 1
     
     agent.set_reward_sum(agent.get_reward_sum() + reward)
     
-    # print(agent.step)
-    alpha = 1.0 / (agent.step + 1.0)
-    # print(alpha)
-    new_v = (1 - alpha) * agent.get_V(i, s) + alpha * reward
+    new_v = (1.0 - agent.alpha) * agent.get_V(i, s) + agent.alpha * reward
     agent.set_V(i, s, new_v)
     seq.appendleft(s)
   elif i <= agent.root:
     while not agent.is_terminal(i):
-      # choose maxnode maxnode according to the current exploration policy (hierarchical policy)
       a = epsilon_greedy(agent, i, s)
       childSeq = maxQ_Q(agent, a, s)
       
@@ -199,37 +172,39 @@ def maxQ_Q(agent, i, s):
       
       N = 1
       for _s in childSeq:
-        alpha = 1.0 / (agent.step + 1.0)
-        Q_tilde = agent.get_V(a_opt, agent.new_s) + agent.get_C_tilde(i, s, a_opt)
-        new_c_tilde = (1 - alpha) * agent.get_C_tilde(i, _s, a) + alpha * (agent.gamma ** N) * (
+        Q_tilde = agent.get_C_tilde(i, agent.new_s, a_opt) + agent.get_V(a_opt, _s)
+        new_c_tilde = (1 - agent.alpha) * agent.get_C_tilde(i, _s, a) + agent.alpha * (agent.gamma ** N) * (
                 R_tilde(agent, i) + Q_tilde)
         agent.set_C_tilde(i, _s, a, new_c_tilde)
         # update C value
-        agent.V_copy = agent.V.copy()
-        v_t = eval(agent, i, agent.new_s)
-        new_c = (1 - alpha) * agent.get_C(i, _s, a) + alpha * (agent.gamma ** N) * (
-                agent.get_C(i, agent.new_s, a_opt) + v_t)
+        # agent.V_copy = agent.V.copy()
+        # v_t = eval(agent, i, agent.new_s)
+        # new_c = (1 - agent.alpha) * agent.get_C(i, _s, a) + agent.alpha * (agent.gamma ** N) * (agent.get_C(i, agent.new_s, a_opt) + v_t)
+        new_c = (1 - agent.alpha) * agent.get_C(i, _s, a) + agent.alpha * (agent.gamma ** N) * (agent.get_C(i, agent.new_s, a_opt) + agent.get_V(a_opt,agent.new_s))
         agent.set_C(i, _s, a, new_c)
+        N = N + 1
       
-      seq.extend(childSeq)
+      seq.extendleft(childSeq)
       s = agent.new_s
   
   return seq
 
 # Main
-def run_game(env, trails, episodes, gamma):
+def run_game(env, trails, episodes, alpha, gamma):
   # gotoSource + gotoDestination + put + get + root (number of non primitive actions)
   np_actions = 5
   nr_of_nodes = env.action_space.n + np_actions
   nr_of_states = env.observation_space.n
   
-  taxi_agent = Agent(nr_of_nodes, nr_of_states, gamma, env)  # starting state
+  taxi_agent = Agent(nr_of_nodes, nr_of_states, alpha, gamma, env)  # starting state
   
-  result = np.zeros((trails, int(episodes / 10)))
+  result = np.zeros((trails, int(episodes / 10), 2))
   avgReward = np.zeros(10)
+  avgStep = np.zeros(10)
   for i in range(trails):
     print("trail: {}".format(i))
     count = 0
+    taxi_agent.episode = 1
     for j in range(episodes):
       
       # reset
@@ -239,19 +214,23 @@ def run_game(env, trails, episodes, gamma):
       maxQ_Q(taxi_agent, taxi_agent.root, env.s)  # start with root node (0) and starting state s_0 (0)
       
       # add average reward
-      avgReward[count] = taxi_agent.get_reward_sum() / taxi_agent.step
+      avgReward[count] = taxi_agent.get_reward_sum()
+      avgStep[count] = taxi_agent.step
+      
+      count += 1
       
       # average of 10 rewards and add to result
-      if len(avgReward) >= 10:
-        result[i][int(j / 10)] = np.average(avgReward)
+      if count >= 10:
+        result[i][int(j / 10)] = (np.average(avgReward), np.average(avgStep))
         avgReward = np.zeros(10)
+        avgStep = np.zeros(10)
         count = 0
       
       # print status
       if j % 1000 == 0:
         print("episode: {}".format(j))
-      
-      count += 1
   
+      taxi_agent.episode += 1
+      
   np.save(".\saves\maxqq_{}_{}".format(trails, episodes), result)
   return result
