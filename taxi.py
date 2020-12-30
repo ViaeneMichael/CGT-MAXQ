@@ -45,9 +45,10 @@ def show_plot(algorithm, trails, episodes):
   # learning plot
   plt.figure(figsize=(15, 7.5))
   plt.plot(reward_sequence)
-  plt.xlabel('episodes')
-  plt.ylabel('reward / step')
-  
+  plt.xlabel('Number of episodes')
+  plt.xticks([x/10 for x in range(episodes+1) if x%1000==0],[str(x*10) for x in range(episodes+1) if x%1000 == 0])
+  plt.ylabel('Average reward per step')
+  plt.grid(axis='y')
   plt.savefig("./plots/{}_{}_{}".format(algorithm, trails, episodes))
   
   plt.show()
@@ -85,7 +86,7 @@ gamma = 0.5
 # print("-----------------------MAXQ-Q started-------------------------------")
 # r_maxQQ = maxQQ.run_game(env, trails, maxq_episodes, gamma)
 print("-----------------------Polling started------------------------------")
-polling = polling.run_game(env, trails, polling_episodes, gamma)
+#polling = polling.run_game(env, trails, polling_episodes, gamma)
 
 # show_plot("maxq0", trails, maxq_episodes)
 # show_plot("maxqq",trails, maxq_episodes)
