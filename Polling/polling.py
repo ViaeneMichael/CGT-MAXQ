@@ -94,7 +94,8 @@ class Agent:
 
 # e-Greedy Execution of the MAXQ Graph.
 def epsilon_greedy(agent, i, s):
-  e = 1 / np.sqrt(agent.episode)
+  #e = 1 / np.sqrt(agent.episode)
+  e=0.01
   Q = []
   actions = []
   
@@ -171,12 +172,16 @@ def run_game(env, trails, episodes, alpha, gamma):
     count = 0
     taxi_agent.episode = 1
     for j in range(episodes):
-      
       # reset
       taxi_agent.reset()
-      
-      # algorithm
-      polling(taxi_agent, taxi_agent.root, env.s)  # start with root node (0) and starting state s_0 (0)
+      RGBY = [(0, 0), (0, 4), (4, 0), (4, 3)]
+      taxirow, taxicol, passidx, destidx = list(taxi_agent.env.decode(taxi_agent.env.s))
+      taxiloc = (taxirow, taxicol)
+      while not (passidx >= 4 and taxiloc == RGBY[destidx]):
+		# algorithm
+        polling(taxi_agent, taxi_agent.root, env.s)  # start with root node (0) and starting state s_0 (0)
+        taxirow, taxicol, passidx, destidx = list(taxi_agent.env.decode(taxi_agent.env.s))
+        taxiloc = (taxirow, taxicol)
       
       # add average reward
       avgReward[count] = taxi_agent.get_reward_sum()
@@ -192,7 +197,7 @@ def run_game(env, trails, episodes, alpha, gamma):
         count = 0
       
       # print status
-      if j % 1000 == 0:
+      if j % 10 == 0:
         print("episode: {}".format(j))
       
       taxi_agent.episode += 1

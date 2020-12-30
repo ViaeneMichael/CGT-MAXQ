@@ -85,14 +85,14 @@ env = gym.make("Taxi-v3")
 
 trails = 40  # 200 is too much --> 40
 maxq_episodes = 25000  # maxq0 and maxqq 50 000 episodes --> 25000
-polling_episodes = 10000
+polling_episodes = 1000
 alpha = 0.2
 gamma = 1
 
 # r_maxQ0 = maxQ0.run_game(env, trails, maxq_episodes, alpha, gamma)
 # r_maxQQ = maxQQ.run_game(env, trails, maxq_episodes, alpha, gamma)
-# polling = polling.run_game(env, trails, polling_episodes, alpha, gamma)
+polling = polling.run_game(env, trails, polling_episodes, alpha, gamma)
 
 # show_plot("maxq0", trails, maxq_episodes)
 # show_plot("maxqq", trails, maxq_episodes)
-show_plot("polling", 35, polling_episodes)
+show_plot("polling", trails, polling_episodes)
