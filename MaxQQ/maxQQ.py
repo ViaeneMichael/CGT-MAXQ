@@ -1,6 +1,7 @@
 import numpy as np
 from collections import deque
 import operator
+import copy
 
 class Agent:
   def __init__(self, nr_of_nodes, nr_of_states, alpha, gamma, env):
@@ -30,7 +31,7 @@ class Agent:
     self.gamma = gamma
     self.done = False
     self.__reward_sum = 0
-    self.new_s = self.env.s
+    self.new_s = copy.copy(self.env.s)
     
     # set()  # new empty object
     self.graph = [
@@ -98,7 +99,7 @@ class Agent:
     self.env.reset()
     self.set_reward_sum(0)
     self.done = False
-    self.new_s = self.env.s
+    self.new_s = copy.copy(self.env.s)
     self.step = 0
 
 # e-Greedy Execution of the MAXQ Graph.
@@ -153,7 +154,7 @@ def maxQ_Q(agent, i, s):
   agent.done = False
   if agent.is_primitive(i):
     
-    agent.new_s, reward, agent.done, info = agent.env.step(i)
+    agent.new_s, reward, agent.done, info = copy.copy(agent.env.step(i))
     agent.step += 1
     
     agent.set_reward_sum(agent.get_reward_sum() + reward)

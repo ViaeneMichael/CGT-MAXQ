@@ -40,16 +40,21 @@ import matplotlib.pyplot as plt
 
 def show_plot(algorithm, trails, episodes):
   rewards_steps = np.load(".\saves\{}_{}_{}.npy".format(algorithm, trails, episodes))
+
+  rewards = np.zeros((trails, int(episodes / 10)))
+  steps = np.zeros((trails, int(episodes / 10)))
+  
   # for loop for multiple trails
-  rewards = [item[0] for item in rewards_steps[0]]
-  # print(rewards)
-  # steps = [item[1] for item in rewards_steps]
-  # reward_sequence = np.sum(rewards, axis=0) / trails
-  # print(reward_sequence)
-  reward_sequence = rewards
+  for trail in range(trails):
+    rewards[trail] = [item[0] for item in rewards_steps[trail]]
+    steps[trail] = [item[1] for item in rewards_steps[trail]]
+  
+  reward_sequence = np.sum(rewards, axis=0) / trails
+  step_sequence = np.sum(steps, axis=0) / trails
   
   # learning plot
   plt.figure(figsize=(15, 7.5))
+  # plt.plot(reward_sequence / step_sequence)
   plt.plot(reward_sequence)
   plt.xlabel('Number of episodes')
   plt.xticks([x / 10 for x in range(episodes + 1) if x % 5000 == 0],
@@ -57,7 +62,8 @@ def show_plot(algorithm, trails, episodes):
   # plt.ylabel('Average reward per step')
   plt.ylabel('Average reward')
   plt.grid(axis='y')
-  plt.savefig("./plots/{}_{}_{}".format(algorithm, trails, episodes))
+  plt.title(algorithm)
+  # plt.savefig("./plots/{}_{}_{}".format(algorithm, trails, episodes))
   
   plt.show()
 
@@ -84,15 +90,18 @@ def show_plot(algorithm, trails, episodes):
 env = gym.make("Taxi-v3")
 
 trails = 40  # 200 is too much --> 40
+test_trails = 2
 maxq_episodes = 25000  # maxq0 and maxqq 50 000 episodes --> 25000
-polling_episodes = 1000
+test_maxq_episodes = 10000
+polling_episodes = 10000
+test_polling_episodes = 1000
 alpha = 0.2
 gamma = 1
 
-# r_maxQ0 = maxQ0.run_game(env, trails, maxq_episodes, alpha, gamma)
-# r_maxQQ = maxQQ.run_game(env, trails, maxq_episodes, alpha, gamma)
-polling = polling.run_game(env, trails, polling_episodes, alpha, gamma)
+# r_maxQ0 = maxQ0.run_game(env, test_trails, test_maxq_episodes, alpha, gamma)
+# r_maxQQ = maxQQ.run_game(env, test_trails, test_maxq_episodes, alpha, gamma)
+# polling = polling.run_game(env, test_trails, test_polling_episodes, alpha, gamma)
 
-# show_plot("maxq0", trails, maxq_episodes)
-# show_plot("maxqq", trails, maxq_episodes)
-show_plot("polling", trails, polling_episodes)
+show_plot("maxq0", trails, maxq_episodes)
+show_plot("maxqq", trails, maxq_episodes)
+# show_plot("polling", test_trails, test_polling_episodes)

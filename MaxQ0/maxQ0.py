@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 
 class Agent:
   def __init__(self, nr_of_nodes, nr_of_states, alpha, gamma, env):
@@ -27,7 +28,7 @@ class Agent:
     self.gamma = gamma
     self.done = False
     self.__reward_sum = 0
-    self.new_s = self.env.s
+    self.new_s = copy.copy(self.env.s)
     
     # set()  # new empty object
     self.graph = [
@@ -89,7 +90,7 @@ class Agent:
     self.env.reset()
     self.set_reward_sum(0)
     self.done = False
-    self.new_s = self.env.s
+    self.new_s = copy.copy(self.env.s)
     self.step = 0
 
 # e-Greedy Execution of the MAXQ Graph.
@@ -137,7 +138,7 @@ def maxQ_0(agent, i, s):
     # observe result s' (I think nothing needs to change here -- done?)
     
     # take maxnode maxnode
-    agent.new_s, reward, agent.done, info = agent.env.step(i)
+    agent.new_s, reward, agent.done, info = copy.copy(agent.env.step(i))
     agent.step += 1
     
     agent.set_reward_sum(agent.get_reward_sum() + reward)
@@ -169,8 +170,8 @@ def run_game(env, trails, episodes, alpha, gamma):
   taxi_agent = Agent(nr_of_nodes, nr_of_states, alpha, gamma, env)  # starting state
   
   result = np.zeros((trails, int(episodes / 10), 2))
-  avgReward = np.zeros((10, 2))
-  avgStep = np.zeros((10, 2))
+  avgReward = np.zeros(10)
+  avgStep = np.zeros(10)
   for i in range(trails):
     print("trail: {}".format(i))
     count = 0

@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 
 class Agent:
   def __init__(self, nr_of_nodes, nr_of_states, alpha, gamma, env):
@@ -27,7 +28,7 @@ class Agent:
     self.gamma = gamma
     self.done = False
     self.__reward_sum = 0
-    self.new_s = self.env.s
+    self.new_s = self.new_s = copy.copy(self.env.s)
     
     # set()  # new empty object
     self.graph = [
@@ -89,13 +90,12 @@ class Agent:
     self.env.reset()
     self.set_reward_sum(0)
     self.done = False
-    self.new_s = self.env.s
+    self.new_s = copy.copy(self.env.s)
     self.step = 0
 
 # e-Greedy Execution of the MAXQ Graph.
 def epsilon_greedy(agent, i, s):
-  #e = 1 / np.sqrt(agent.episode)
-  e=0.01
+  e = 1 / np.sqrt(agent.episode)
   Q = []
   actions = []
   
@@ -133,7 +133,7 @@ def polling(agent, i, s):
     i = 11  # end recursion
   agent.done = False
   if agent.is_primitive(i):
-    agent.new_s, reward, _, info = agent.env.step(i)
+    agent.new_s, reward, _, info = copy.copy(agent.env.step(i))
     agent.done = True
     
     agent.step += 1
@@ -178,7 +178,7 @@ def run_game(env, trails, episodes, alpha, gamma):
       taxirow, taxicol, passidx, destidx = list(taxi_agent.env.decode(taxi_agent.env.s))
       taxiloc = (taxirow, taxicol)
       while not (passidx >= 4 and taxiloc == RGBY[destidx]):
-		# algorithm
+        # algorithm
         polling(taxi_agent, taxi_agent.root, env.s)  # start with root node (0) and starting state s_0 (0)
         taxirow, taxicol, passidx, destidx = list(taxi_agent.env.decode(taxi_agent.env.s))
         taxiloc = (taxirow, taxicol)
@@ -201,7 +201,7 @@ def run_game(env, trails, episodes, alpha, gamma):
         print("episode: {}".format(j))
       
       taxi_agent.episode += 1
-      
+    
     if i % 5 == 0 and i != 0:
       np.save(".\saves\polling_{}_{}".format(i, episodes), result)
   
