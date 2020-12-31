@@ -141,10 +141,8 @@ def epsilon_greedy(agent, i, s):
   
   if np.random.rand(1) < e:
     action = np.random.choice(actions)
-    # print("return: {} from {}".format(maxnode, actions))
     return action
   else:
-    # print("return: {} from {}".format(best_action_idx, actions))
     return actions[best_action_idx]
 
 # evaluation of node
@@ -243,7 +241,9 @@ def run_game(env, trails, episodes, alpha, gamma):
         
       if taxi_agent.step >= env._max_episode_steps:
         print("we need more than {} steps".format(taxi_agent.step))
-        
+      
+      print("steps: {}".format(taxi_agent.step))
+      
       taxi_agent.episode += 1
   
   np.save(".\saves\maxq0_{}_{}".format(trails, episodes), result)
