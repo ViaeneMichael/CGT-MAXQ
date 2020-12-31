@@ -86,6 +86,38 @@ class Agent:
     elif self.is_primitive(a):
       return True
   
+  def print_action(self, action):
+    if action == 0:
+      print("south - done: {}".format(self.done))
+    elif action == 1:
+      print("north - done: {}".format(self.done))
+    elif action == 2:
+      print("east - done: {}".format(self.done))
+    elif action == 3:
+      print("west - done: {}".format(self.done))
+    elif action == 4:
+      print("pickup - done: {}".format(self.done))
+    elif action == 5:
+      print("dropoff - done: {}".format(self.done))
+    elif action == 6:
+      print("gotoSource - done: {}".format(self.done))
+    elif action == 7:
+      print("gotoDestination - done: {}".format(self.done))
+    elif action == 8:
+      print("get -> pickup, gotoSource - done: {}".format(self.done))
+    elif action == 9:
+      print("put -> dropoff, gotoDestination - done: {}".format(self.done))
+    elif action == 10:
+      print("root -> put, get")
+    
+  def print_passenger_info(self):
+    RGBY = [(0, 0), (0, 4), (4, 0), (4, 3)]
+    taxirow, taxicol, passidx, destidx = list(self.env.decode(self.env.s))
+    taxiloc = (taxirow, taxicol)
+    print("taxiloc: {}".format(taxiloc))
+    print("pass index: {}".format(RGBY[passidx]))
+    print("dest index: {}".format(RGBY[destidx]))
+  
   def reset(self):
     self.env.reset()
     self.set_reward_sum(0)
@@ -145,6 +177,7 @@ def maxQ_0(agent, i, s):
     
     new_v = (1 - agent.alpha) * agent.get_V(i, s) + agent.alpha * reward
     agent.set_V(i, s, new_v)
+    agent.print_action(i)
     return 1
   elif i <= agent.root:
     count = 0
@@ -158,6 +191,7 @@ def maxQ_0(agent, i, s):
       agent.set_C(i, s, a, new_c)
       count += N
       s = agent.new_s
+      agent.print_action(i)
     return count
 
 # Main
@@ -177,6 +211,9 @@ def run_game(env, trails, episodes, alpha, gamma):
     count = 0
     taxi_agent.episode = 1
     for j in range(episodes):
+      
+      # print passenger source and destination
+      taxi_agent.print_passenger_info()
       
       # reset
       taxi_agent.reset()
