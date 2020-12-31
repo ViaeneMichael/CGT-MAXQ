@@ -32,6 +32,7 @@ class Agent:
     self.done = False
     self.__reward_sum = 0
     self.new_s = copy.copy(self.env.s)
+    self.from_gotoD = False
     
     # set()  # new empty object
     self.graph = [
@@ -89,6 +90,7 @@ class Agent:
     elif a == self.get:
       return passidx >= 4
     elif a == self.gotoD:
+      self.from_gotoD = True
       return passidx >= 4 and taxiloc == RGBY[destidx]
     elif a == self.gotoS:
       return passidx < 4 and taxiloc == RGBY[passidx]
@@ -155,6 +157,11 @@ def maxQ_Q(agent, i, s):
   if agent.is_primitive(i):
     
     agent.new_s, reward, agent.done, info = copy.copy(agent.env.step(i))
+    
+    if agent.done and not agent.from_gotoD:
+      # print("do we come here?")
+      agent.done = False
+    
     agent.step += 1
     
     agent.set_reward_sum(agent.get_reward_sum() + reward)
@@ -231,6 +238,9 @@ def run_game(env, trails, episodes, alpha, gamma):
       if j % 1000 == 0:
         print("episode: {}".format(j))
   
+      if taxi_agent.step >= env._max_episode_steps:
+        print("we need more than {} steps".format(taxi_agent.step))
+      
       taxi_agent.episode += 1
       
   np.save(".\saves\maxqq_{}_{}".format(trails, episodes), result)

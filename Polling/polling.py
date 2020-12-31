@@ -200,6 +200,9 @@ def run_game(env, trails, episodes, alpha, gamma):
       if j % 10 == 0:
         print("episode: {}".format(j))
       
+      if taxi_agent.step >= env._max_episode_steps:
+        print("we need more than {} steps".format(taxi_agent.step))
+      
       taxi_agent.episode += 1
     
     if i % 5 == 0 and i != 0:

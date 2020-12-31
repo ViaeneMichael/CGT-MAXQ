@@ -171,13 +171,16 @@ def maxQ_0(agent, i, s):
     
     # take maxnode maxnode
     agent.new_s, reward, agent.done, info = copy.copy(agent.env.step(i))
+      
+    # print(reward)
+      
     agent.step += 1
     
     agent.set_reward_sum(agent.get_reward_sum() + reward)
     
     new_v = (1 - agent.alpha) * agent.get_V(i, s) + agent.alpha * reward
     agent.set_V(i, s, new_v)
-    agent.print_action(i)
+    # agent.print_action(i)
     return 1
   elif i <= agent.root:
     count = 0
@@ -191,7 +194,7 @@ def maxQ_0(agent, i, s):
       agent.set_C(i, s, a, new_c)
       count += N
       s = agent.new_s
-      agent.print_action(i)
+      # agent.print_action(i)
     return count
 
 # Main
@@ -213,7 +216,7 @@ def run_game(env, trails, episodes, alpha, gamma):
     for j in range(episodes):
       
       # print passenger source and destination
-      taxi_agent.print_passenger_info()
+      # taxi_agent.print_passenger_info()
       
       # reset
       taxi_agent.reset()
@@ -237,6 +240,9 @@ def run_game(env, trails, episodes, alpha, gamma):
       # print status
       if j % 1000 == 0:
         print("episode: {}".format(j))
+        
+      if taxi_agent.step >= env._max_episode_steps:
+        print("we need more than {} steps".format(taxi_agent.step))
         
       taxi_agent.episode += 1
   
