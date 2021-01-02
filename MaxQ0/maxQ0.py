@@ -4,7 +4,7 @@ import copy
 class Agent:
   def __init__(self, nr_of_nodes, nr_of_states, alpha, gamma, env):
     self.env = env
-
+    
     self.V = np.zeros((nr_of_nodes, nr_of_states))
     self.C = np.zeros((nr_of_nodes, nr_of_states, nr_of_nodes))
     self.V_copy = self.V.copy()
@@ -109,7 +109,7 @@ class Agent:
       print("put -> dropoff, gotoDestination - done: {}".format(self.done))
     elif action == 10:
       print("root -> put, get")
-    
+  
   def print_passenger_info(self):
     RGBY = [(0, 0), (0, 4), (4, 0), (4, 3)]
     taxirow, taxicol, passidx, destidx = list(self.env.decode(self.env.s))
@@ -117,6 +117,11 @@ class Agent:
     print("taxiloc: {}".format(taxiloc))
     print("pass index: {}".format(RGBY[passidx]))
     print("dest index: {}".format(RGBY[destidx]))
+  
+  def reset_V_C(self, nr_of_nodes, nr_of_states):
+    self.V = np.zeros((nr_of_nodes, nr_of_states))
+    self.C = np.zeros((nr_of_nodes, nr_of_states, nr_of_nodes))
+    self.V_copy = self.V.copy()
   
   def reset(self):
     self.env.reset()
@@ -169,9 +174,9 @@ def maxQ_0(agent, i, s):
     
     # take maxnode maxnode
     agent.new_s, reward, agent.done, info = copy.copy(agent.env.step(i))
-      
+    
     # print(reward)
-      
+    
     agent.step += 1
     
     agent.set_reward_sum(agent.get_reward_sum() + reward)
@@ -185,6 +190,8 @@ def maxQ_0(agent, i, s):
     while not agent.is_terminal(i):
       # choose maxnode maxnode according to the current exploration policy (hierarchical policy)
       a = epsilon_greedy(agent, i, s)
+      # print(agent.get_V(a,s))
+      # print(agent.get_C(i,s,a))
       N = maxQ_0(agent, a, s)
       agent.V_copy = agent.V.copy()
       v_t = eval(agent, i, agent.new_s)
@@ -211,6 +218,7 @@ def run_game(env, trails, episodes, alpha, gamma):
     print("trail: {}".format(i))
     count = 0
     taxi_agent.episode = 1
+    taxi_agent.reset_V_C(nr_of_nodes,nr_of_states)
     for j in range(episodes):
       
       # print passenger source and destination
@@ -238,11 +246,11 @@ def run_game(env, trails, episodes, alpha, gamma):
       # print status
       if j % 1000 == 0:
         print("episode: {}".format(j))
-        
+      
       if taxi_agent.step >= env._max_episode_steps:
         print("we need more than {} steps".format(taxi_agent.step))
       
-      print("steps: {}".format(taxi_agent.step))
+      # print("steps: {}".format(taxi_agent.step))
       
       taxi_agent.episode += 1
   

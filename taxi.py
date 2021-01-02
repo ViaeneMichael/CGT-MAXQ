@@ -89,21 +89,20 @@ def show_plot(algorithm, trails, episodes):
 # Max Q learning
 env = gym.make("Taxi-v3")
 # max steps
-env._max_episode_steps = 1000
+# env._max_episode_steps = 200
 
-trails = 40  # 200 is too much --> 40
-test_trails = 5
+trails = 5  # 200 is too much --> 40
 maxq_episodes = 25000  # maxq0 and maxqq 50 000 episodes --> 25000
-test_maxq_episodes = 10000
+test_maxq_episodes = 2000
 polling_episodes = 10000
 test_polling_episodes = 1000
 alpha = 0.2
 gamma = 1
 
-# r_maxQ0 = maxQ0.run_game(env, 1, 1000, alpha, gamma)
-r_maxQQ = maxQQ.run_game(env, 1, test_maxq_episodes, alpha, gamma)
-# polling = polling.run_game(env, test_trails, polling_episodes, alpha, gamma)
+# r_maxQ0 = maxQ0.run_game(env, trails, maxq_episodes, alpha, gamma)
+r_maxQQ = maxQQ.run_game(env, trails, maxq_episodes, alpha, gamma)
+# polling = polling.run_game(env, trails, polling_episodes, alpha, gamma)
 
-# show_plot("maxq0", 1, maxq_episodes)
+# show_plot("maxq0", trails, maxq_episodes)
 # show_plot("maxqq", 1, maxq_episodes)
-# show_plot("polling", test_trails, test_polling_episodes)
+# show_plot("polling", trails, polling_episodes)

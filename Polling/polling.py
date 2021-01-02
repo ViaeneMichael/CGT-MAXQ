@@ -86,6 +86,11 @@ class Agent:
     elif self.is_primitive(a):
       return True
   
+  def reset_V_C(self, nr_of_nodes, nr_of_states):
+    self.V = np.zeros((nr_of_nodes, nr_of_states))
+    self.C = np.zeros((nr_of_nodes, nr_of_states, nr_of_nodes))
+    self.V_copy = self.V.copy()
+  
   def reset(self):
     self.env.reset()
     self.set_reward_sum(0)
@@ -171,6 +176,7 @@ def run_game(env, trails, episodes, alpha, gamma):
     print("trail: {}".format(i))
     count = 0
     taxi_agent.episode = 1
+    taxi_agent.reset_V_C(nr_of_nodes, nr_of_states)
     for j in range(episodes):
       # reset
       taxi_agent.reset()
