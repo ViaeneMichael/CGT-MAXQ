@@ -104,5 +104,5 @@ r_maxQQ = maxQQ.run_game(env, trails, maxq_episodes, alpha, gamma)
 # polling = polling.run_game(env, trails, polling_episodes, alpha, gamma)
 
 # show_plot("maxq0", trails, maxq_episodes)
-# show_plot("maxqq", 1, maxq_episodes)
+# show_plot("maxqq", 1, test_maxq_episodes)
 # show_plot("polling", trails, polling_episodes)

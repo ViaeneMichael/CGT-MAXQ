@@ -19,11 +19,14 @@ class Agent:
     w = self.west = 3
     pickup = self.pickup = 4
     dropoff = self.dropoff = 5
-    gotoS = self.gotoS = 6
-    gotoD = self.gotoD = 7
-    get = self.get = 8
-    put = self.put = 9
-    root = self.root = 10
+    navigate = self.navigate = 6
+    # gotoD = self.gotoD = 7
+    # get = self.get = 8
+    # put = self.put = 9
+    # root = self.root = 10
+    get = self.get = 7
+    put = self.put = 8
+    root = self.root = 9
     
     self.alpha = alpha
     self.step = 0.0
@@ -32,6 +35,7 @@ class Agent:
     self.done = False
     self.__reward_sum = 0
     self.new_s = copy.copy(self.env.s)
+    self.from_get = False
     
     # set()  # new empty object
     self.graph = [
@@ -41,10 +45,9 @@ class Agent:
       set(),  # west
       set(),  # pickup
       set(),  # dropoff
-      {s, n, e, w},  # gotoSource
-      {s, n, e, w},  # gotoDestination
-      {pickup, gotoS},  # get -> pickup, gotoSource
-      {dropoff, gotoD},  # put -> dropoff, gotoDestination
+      {s, n, e, w},  # navigate
+      {pickup, navigate},  # get -> pickup, navigate
+      {dropoff, navigate},  # put -> dropoff, navigate
       {put, get},  # root -> put, get
     ]
   
@@ -64,9 +67,7 @@ class Agent:
     return self.C_tilde[i, s, j]
   
   def set_C_tilde(self, i, s, j, new_c_tilde):
-    # print("C_til (s)={}({})".format(new_c_tilde, s))
     self.C_tilde[i, s, j] = new_c_tilde
-    #print("changes C_til = {}".format(self.C_tilde[i, s, j]))
   
   def get_reward_sum(self):
     return self.__reward_sum
@@ -78,7 +79,6 @@ class Agent:
     return a <= 5
   
   def get_taxi_location(self, s):
-    # taxirow, taxicol, passidx, destidx = list(self.env.decode(self.env.s))
     taxirow, taxicol, passidx, destidx = list(self.env.decode(s))
     taxiloc = (taxirow, taxicol)
     return taxiloc
@@ -105,12 +105,10 @@ class Agent:
     elif action == 6:
       print("gotoSource - done: {}".format(self.done))
     elif action == 7:
-      print("gotoDestination - done: {}".format(self.done))
-    elif action == 8:
       print("get -> pickup, gotoSource - done: {}".format(self.done))
-    elif action == 9:
+    elif action == 8:
       print("put -> dropoff, gotoDestination - done: {}".format(self.done))
-    elif action == 10:
+    elif action == 9:
       print("root -> put, get")
   
   def is_terminal(self, a):
@@ -126,10 +124,11 @@ class Agent:
       return passidx < 4
     elif a == self.get:
       return passidx >= 4
-    elif a == self.gotoD:
-      return passidx >= 4 and taxiloc == RGBY[destidx]
-    elif a == self.gotoS:
-      return passidx < 4 and taxiloc == RGBY[passidx]
+    elif a == self.navigate:
+      if self.from_get:
+        return passidx < 4 and taxiloc == RGBY[passidx]
+      else:
+        return passidx >= 4 and taxiloc == RGBY[destidx]
     elif self.is_primitive(a):
       return True
   
@@ -175,12 +174,9 @@ def argmax_Q(agent, i, s):
   for a in actions:
     V = agent.get_V(a, s)
     C = agent.get_C_tilde(i, s, a)
-    # print("V (s)={}({})".format(V, s))
-    # print("C (s)={}({})".format(C, s))
     qs.append(V + C)
   
   i, v = max(enumerate(qs), key=operator.itemgetter(1))
-  # print("take action {} from {}".format(i, qs))
   return actions[i]
 
 def R_tilde(agent, i):
@@ -208,8 +204,6 @@ def maxQ_Q(agent, i, s):
     i = 11  # end recursion
   agent.done = False
   if agent.is_primitive(i):
-    #agent.print_action(i)
-    # print("primitive action: {}".format(i))
     agent.new_s, reward, agent.done, info = copy.copy(agent.env.step(i))
     
     agent.step += 1
@@ -218,44 +212,29 @@ def maxQ_Q(agent, i, s):
     
     new_v = (1.0 - agent.alpha) * agent.get_V(i, s) + agent.alpha * reward
     agent.set_V(i, s, new_v)
-    # print("prim state: {}".format(s))
     seq.appendleft(s)
-    # print("prim - seq: {}".format(seq))
-    # print(agent.get_taxi_location(agent.new_s))
     return seq
   elif i <= agent.root:
-    # agent.print_action(i)
-    # print("action i: {}".format(i))
+    
+    if i == agent.get:
+      agent.from_get = True
+    
+    if agent.from_get and i == agent.put:
+      agent.from_get = False
+    
     while not agent.is_terminal(i):
-      # print("goes in loop")
+      
       a = epsilon_greedy(agent, i, s)
       childSeq = maxQ_Q(agent, a, s)
-      # print("seq: {}".format(childSeq))
       
       a_opt = argmax_Q(agent, i, agent.new_s)
-      # agent.print_action(a_opt)
-      # print("action a_opt: {}".format(a_opt))
       
       N = 1
-      
-      # agent.print_action(i)
-      # print("action i: {}".format(i))
-      # agent.print_action(a)
-      # print("action a: {}".format(a))
-      # agent.print_action(a_opt)
-      # print("action a_opt: {}".format(a_opt))
       
       for _s in childSeq:
         Q_tilde = agent.get_C_tilde(i, agent.new_s, a_opt) + agent.get_V(a_opt, _s)
         new_c_tilde = (1 - agent.alpha) * agent.get_C_tilde(i, _s, a) + agent.alpha * (agent.gamma ** N) * (
                 R_tilde(agent, i) + Q_tilde)
-        
-        # print("==================={}======================".format(_s))
-        # print("C_til= {}".format(agent.get_C_tilde(i, agent.new_s, a_opt)))
-        # print("V= {}".format(agent.get_V(a_opt, _s)))
-        # print("new C_til={}".format(new_c_tilde))
-        
-        # print(agent.get_taxi_location(_s))
         
         agent.set_C_tilde(i, _s, a, new_c_tilde)
         # update C value
@@ -293,8 +272,6 @@ def run_game(env, trails, episodes, alpha, gamma):
       # reset
       taxi_agent.reset()
       
-      # taxi_agent.get_start_goal()
-      
       # algorithm
       maxQ_Q(taxi_agent, taxi_agent.root, env.s)  # start with root node (0) and starting state s_0 (0)
       
@@ -314,11 +291,6 @@ def run_game(env, trails, episodes, alpha, gamma):
       # print status
       if j % 1000 == 0:
         print("episode: {}".format(j))
-      
-      # if taxi_agent.step >= env._max_episode_steps:
-      #   print("we need more than {} steps".format(taxi_agent.step))
-      #
-      # print("steps: {}".format(taxi_agent.step))
       
       taxi_agent.episode += 1
   
