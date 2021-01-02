@@ -20,10 +20,6 @@ class Agent:
     pickup = self.pickup = 4
     dropoff = self.dropoff = 5
     navigate = self.navigate = 6
-    # gotoD = self.gotoD = 7
-    # get = self.get = 8
-    # put = self.put = 9
-    # root = self.root = 10
     get = self.get = 7
     put = self.put = 8
     root = self.root = 9
@@ -135,6 +131,7 @@ class Agent:
   def reset_V_C(self, nr_of_nodes, nr_of_states):
     self.V = np.zeros((nr_of_nodes, nr_of_states))
     self.C = np.zeros((nr_of_nodes, nr_of_states, nr_of_nodes))
+    self.C_tilde = np.zeros((nr_of_nodes, nr_of_states, nr_of_nodes))
     self.V_copy = self.V.copy()
   
   def reset(self):

@@ -16,11 +16,10 @@ class Agent:
     w = self.west = 3
     pickup = self.pickup = 4
     dropoff = self.dropoff = 5
-    gotoS = self.gotoS = 6
-    gotoD = self.gotoD = 7
-    get = self.get = 8
-    put = self.put = 9
-    root = self.root = 10
+    navigate = self.navigate = 6
+    get = self.get = 7
+    put = self.put = 8
+    root = self.root = 9
     
     self.alpha = alpha
     self.step = 0.0
@@ -29,6 +28,7 @@ class Agent:
     self.done = False
     self.__reward_sum = 0
     self.new_s = copy.copy(self.env.s)
+    self.from_get = False
     
     # set()  # new empty object
     self.graph = [
@@ -38,10 +38,9 @@ class Agent:
       set(),  # west
       set(),  # pickup
       set(),  # dropoff
-      {s, n, e, w},  # gotoSource
-      {s, n, e, w},  # gotoDestination
-      {pickup, gotoS},  # get -> pickup, gotoSource
-      {dropoff, gotoD},  # put -> dropoff, gotoDestination
+      {s, n, e, w},  # navigate
+      {pickup, navigate},  # get -> pickup, navigate
+      {dropoff, navigate},  # put -> dropoff, gotoDestination
       {put, get},  # root -> put, get
     ]
   
@@ -66,26 +65,6 @@ class Agent:
   def is_primitive(self, a):
     return a <= 5
   
-  def is_terminal(self, a):
-    RGBY = [(0, 0), (0, 4), (4, 0), (4, 3)]
-    taxirow, taxicol, passidx, destidx = list(self.env.decode(self.env.s))
-    taxiloc = (taxirow, taxicol)
-    
-    if self.done:
-      return True
-    elif a == self.root:
-      return self.done
-    elif a == self.put:
-      return passidx < 4
-    elif a == self.get:
-      return passidx >= 4
-    elif a == self.gotoD:
-      return passidx >= 4 and taxiloc == RGBY[destidx]
-    elif a == self.gotoS:
-      return passidx < 4 and taxiloc == RGBY[passidx]
-    elif self.is_primitive(a):
-      return True
-  
   def print_action(self, action):
     if action == 0:
       print("south - done: {}".format(self.done))
@@ -102,13 +81,32 @@ class Agent:
     elif action == 6:
       print("gotoSource - done: {}".format(self.done))
     elif action == 7:
-      print("gotoDestination - done: {}".format(self.done))
-    elif action == 8:
       print("get -> pickup, gotoSource - done: {}".format(self.done))
-    elif action == 9:
+    elif action == 8:
       print("put -> dropoff, gotoDestination - done: {}".format(self.done))
-    elif action == 10:
+    elif action == 9:
       print("root -> put, get")
+  
+  def is_terminal(self, a):
+    RGBY = [(0, 0), (0, 4), (4, 0), (4, 3)]
+    taxirow, taxicol, passidx, destidx = list(self.env.decode(self.env.s))
+    taxiloc = (taxirow, taxicol)
+    
+    if self.done:
+      return True
+    elif a == self.root:
+      return self.done
+    elif a == self.put:
+      return passidx < 4
+    elif a == self.get:
+      return passidx >= 4
+    elif a == self.navigate:
+      if self.from_get:
+        return passidx < 4 and taxiloc == RGBY[passidx]
+      else:
+        return passidx >= 4 and taxiloc == RGBY[destidx]
+    elif self.is_primitive(a):
+      return True
   
   def print_passenger_info(self):
     RGBY = [(0, 0), (0, 4), (4, 0), (4, 3)]
@@ -167,7 +165,7 @@ def eval(agent, a, s):
 # s: state
 def maxQ_0(agent, i, s):
   if agent.done:
-    i = 11  # end recursion
+    i = 10  # end recursion
   agent.done = False
   if agent.is_primitive(i):
     # observe result s' (I think nothing needs to change here -- done?)
@@ -187,15 +185,20 @@ def maxQ_0(agent, i, s):
     return 1
   elif i <= agent.root:
     count = 0
+    
+    if i == agent.get:
+      agent.from_get = True
+    
+    if agent.from_get and i == agent.put:
+      agent.from_get = False
+    
     while not agent.is_terminal(i):
       # choose maxnode maxnode according to the current exploration policy (hierarchical policy)
       a = epsilon_greedy(agent, i, s)
-      # print(agent.get_V(a,s))
-      # print(agent.get_C(i,s,a))
       N = maxQ_0(agent, a, s)
       agent.V_copy = agent.V.copy()
       v_t = eval(agent, i, agent.new_s)
-      new_c = (1 - agent.alpha) * agent.get_C(i, s, a) + agent.alpha * agent.gamma ** N * v_t
+      new_c = (1 - agent.alpha) * agent.get_C(i, s, a) + agent.alpha * (agent.gamma ** N) * v_t
       agent.set_C(i, s, a, new_c)
       count += N
       s = agent.new_s
