@@ -57,8 +57,8 @@ def show_plot(algorithm, trails, episodes):
   # plt.plot(reward_sequence / step_sequence)
   plt.plot(reward_sequence)
   plt.xlabel('Number of episodes')
-  plt.xticks([x / 10 for x in range(episodes + 1) if x % 1000 == 0],
-             [str(x) for x in range(episodes + 1) if x % 1000 == 0])
+  plt.xticks([x / 10 for x in range(episodes + 1) if x % 5000 == 0],
+             [str(x) for x in range(episodes + 1) if x % 5000 == 0])
   # plt.ylabel('Average reward per step')
   plt.ylabel('Average reward')
   plt.grid(axis='y')
@@ -91,7 +91,7 @@ env = gym.make("Taxi-v3")
 # max steps
 # env._max_episode_steps = 200
 
-trails = 5  # 200 is too much --> 40
+trails = 40  # 200 is too much --> 40
 maxq_episodes = 25000  # maxq0 and maxqq 50 000 episodes --> 25000
 test_maxq_episodes = 2000
 polling_episodes = 10000
@@ -101,8 +101,8 @@ gamma = 0.7
 
 # r_maxQ0 = maxQ0.run_game(env, trails, maxq_episodes, alpha, gamma)
 # r_maxQQ = maxQQ.run_game(env, trails, maxq_episodes, alpha, gamma)
-polling = polling.run_game(env, 1, test_polling_episodes, alpha, gamma)
+# polling = polling.run_game(env, 1, test_polling_episodes, alpha, gamma)
 
-# show_plot("maxq0", trails, maxq_episodes)
-# show_plot("maxqq", trails, maxq_episodes)
-show_plot("polling", 1, test_polling_episodes)
+show_plot("maxq0", trails, maxq_episodes)
+show_plot("maxqq", trails, maxq_episodes)
+# show_plot("polling", 1, test_polling_episodes)

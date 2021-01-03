@@ -222,13 +222,6 @@ def polling(agent, i, s, parents):
       agent.env.render()
       print("reward: {}".format(reward))
     
-    if i == agent.pickup and not reward == -10:
-      agent.picked_up = True
-    
-    if reward < -2:
-      agent.put_illegal += 1
-    # agent.done = True
-    
     agent.step += 1
     agent.set_reward_sum(agent.get_reward_sum() + reward)
     

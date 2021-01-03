@@ -221,7 +221,7 @@ def run_game(env, trails, episodes, alpha, gamma):
     print("trail: {}".format(i))
     count = 0
     taxi_agent.episode = 1
-    taxi_agent.reset_V_C(nr_of_nodes,nr_of_states)
+    taxi_agent.reset_V_C(nr_of_nodes, nr_of_states)
     for j in range(episodes):
       
       # print passenger source and destination
