@@ -20,8 +20,6 @@ class Agent:
     self.C = np.zeros((nr_of_nodes, nr_of_states, nr_of_nodes))
     self.V_copy = self.V.copy()
     
-    self.distribution = np.zeros(10)
-    
     # consistend of max nodes and Q nodes
     s = self.south = 0
     n = self.north = 1
@@ -33,8 +31,6 @@ class Agent:
     get = self.get = 7
     put = self.put = 8
     root = self.root = 9
-    
-    self.put_illegal = 0
     
     self.episode = 0.0
     self.step = 0.0
@@ -176,7 +172,7 @@ def epsilon_greedy(agent, i, s):
   actions = []
   
   for j in agent.graph[i]:
-    # if agent.is_primitive(j) or not agent.polling_terminal(j):
+    if agent.is_primitive(j) or not agent.polling_terminal(j):
       val = agent.get_V(j, s) + agent.get_C(i, s, j)
       Q.append(val)
       actions.append(j)
@@ -208,14 +204,10 @@ def eval(agent, a, s):
 # maxnode: max node
 # s: state
 def polling(agent, i, s, parents):
-  agent.distribution[i] += 1
-  # if agent.done:
-  # i = 11  # end recursion
-  # agent.done = False
   if agent.is_primitive(i):
     agent.new_s, reward, _, info = copy.copy(agent.env.step(i))
     
-    reward = agent.check_dropoff(reward)
+    # reward = agent.check_dropoff(reward)
     
     # per 1000 episodes render taxi problem
     if agent.episode % 1000 == 0:
@@ -228,9 +220,6 @@ def polling(agent, i, s, parents):
     new_v = (1 - agent.alpha) * agent.get_V(i, s) + agent.alpha * reward
     agent.set_V(i, s, new_v)
     
-    # if agent.episode > 1500:
-    #   agent.print_action(i)
-    #   print("V={}".format(agent.get_V(i, s)))
     parents.append(i)
     return 1, parents, reward
   elif i <= agent.root:
@@ -330,21 +319,10 @@ def run_game(env, trails, episodes, alpha, gamma):
       if j % 10 == 0:
         print("episode: {}".format(j))
       
-      # print("=========================================================================")
-      
-      # if j % 1500 == 0:
-      #   print(taxi_agent.distribution / np.sum(taxi_agent.distribution))
-      #   print(taxi_agent.put_illegal)
-      #   taxi_agent.distribution = np.zeros(10)
-      
       taxi_agent.episode += 1
     
     # if i % 5 == 0 and i != 0:
     #   np.save(".\saves\polling_{}_{}".format(i, episodes), result)
-  
-  # print("END RESULT")
-  # print(taxi_agent.distribution / np.sum(taxi_agent.distribution))
-  # print(taxi_agent.put_illegal)
   
   np.save(".\saves\polling_{}_{}".format(trails, episodes), result)
   return result
