@@ -55,17 +55,21 @@ def show_plot(algorithm, trails, episodes):
   # learning plot
   plt.figure(figsize=(15, 7.5))
   # plt.plot(reward_sequence / step_sequence)
-  plt.plot(reward_sequence)
+  plt.plot(np.ma.masked_where(reward_sequence < -100, reward_sequence), label="Reward of learned policy")
+  plt.plot(range(len(reward_sequence)),[9.7 for x in range(len(reward_sequence))],label="Reward of optimal policy")
   plt.xlabel('Number of episodes')
   plt.xticks([x / 10 for x in range(episodes + 1) if x % 5000 == 0],
              [str(x) for x in range(episodes + 1) if x % 5000 == 0])
+  plt.yticks([-100,-90,-80,-70,-60,-50,-40,-30,-20,-10,0,10])
   # plt.ylabel('Average reward per step')
   plt.ylabel('Average reward')
   plt.grid(axis='y')
   plt.title(algorithm)
-  # plt.savefig("./plots/{}_{}_{}".format(algorithm, trails, episodes))
+  plt.legend()
+  plt.savefig("./plots/{}_{}_{}".format(algorithm, trails, episodes))
   
   plt.show()
+  print(max(reward_sequence))
 
 # Main: specify algorithm
 
